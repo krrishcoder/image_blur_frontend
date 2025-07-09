@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Face Blur Magic: Protect Your Privacy!</title>
-   
+  
 </head>
 <body>
     <!-- Animated Background -->
@@ -30,40 +30,75 @@
         <div class="card">
             <h2>📸 Upload Your Image</h2>
             <div class="upload-section">
-                <div class="feature-icon">🛡️</div>
+                <div class="feature-icon">📁</div>
                 <div class="upload-area">
                     <input type="file" id="imageUpload" accept="image/*" class="file-input">
                     <div class="upload-button">
                         Choose Image File
                     </div>
                 </div>
-                <button class="process-btn" onclick="uploadImage()">
-                    ✨ Process Image
+                <div class="image-size" id="originalSize" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Blur Section -->
+        <div class="card">
+            <h2>🔒 Blur Faces</h2>
+            <div class="upload-section">
+                <div class="feature-icon">🛡️</div>
+                <p style="margin-bottom: 20px; opacity: 0.9;">Protect privacy by automatically detecting and blurring faces in your image</p>
+                <button class="process-btn" onclick="blurImage()">
+                    ✨ Blur Faces
                 </button>
-                <div class="loading-spinner" id="loadingSpinner"></div>
-                <div class="success-message" id="successMessage">
-                    ✅ Image processed successfully!
+                <div class="loading-spinner" id="blurLoadingSpinner"></div>
+                <div class="success-message" id="blurSuccessMessage">
+                    ✅ Faces blurred successfully!
                 </div>
             </div>
         </div>
 
+        <!-- Resize Section -->
+        <div class="card">
+            <h2>📏 Resize Image</h2>
+            <div class="resize-section">
+                <div class="feature-icon">🎯</div>
+                <div class="resize-input">
+                    <label for="targetSize">Target Size (KB):</label>
+                    <input type="number" id="targetSize" placeholder="e.g., 500" min="1" max="5000">
+                </div>
+                <button class="process-btn" onclick="resizeImage()">
+                    📐 Resize Image
+                </button>
+                <div class="loading-spinner" id="resizeLoadingSpinner"></div>
+                <div class="success-message" id="resizeSuccessMessage">
+                    ✅ Image resized successfully!
+                </div>
+            </div>
+        </div>
 
         <!-- Results Section -->
         <div class="card">
-            <h2>🎨 Processed Result</h2>
+            <h2>🎨 Processed Results</h2>
             <div class="image-grid">
                 <div>
-                    <h3>Before</h3>
+                    <h3>Original</h3>
                     <div class="image-container">
                         <img id="beforeImage" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSJ1cmwoI2JhY2tncm91bmQyKSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJiYWNrZ3JvdW5kMiIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZjZiNmIiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNGVjZGM0Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMThweCI+T3JpZ2luYWwgSW1hZ2U8L3RleHQ+Cjwvc3ZnPgo=" alt="Original Image">
                     </div>
+                    <div class="image-size" id="beforeSize"></div>
                 </div>
                 <div>
-                    <h3>After</h3>
+                    <h3>Processed</h3>
                     <div class="image-container">
                         <img id="outputImage" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSJ1cmwoI2JhY2tncm91bmQzKSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJiYWNrZ3JvdW5kMyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM0NWI3ZDEiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOTZjOTNkIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHRleHQgeD0iMjAwIiB5PSIxNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMThweCI+UHJvY2Vzc2VkIEltYWdlPC90ZXh0Pgo8L3N2Zz4K" alt="Processed Image">
                     </div>
+                    <div class="image-size" id="afterSize"></div>
                 </div>
+            </div>
+            <div style="text-align: center;">
+                <a id="downloadBtn" class="download-btn" download="processed_image.jpg">
+                    💾 Download Processed Image
+                </a>
             </div>
         </div>
     </div>
@@ -74,6 +109,9 @@
     </div>
 
     <script>
+        let processedImageBlob = null;
+        let originalImageBlob = null;
+
         // Create floating particles
         function createParticles() {
             const particleCount = 20;
@@ -89,23 +127,38 @@
             }
         }
 
+        // Function to calculate file size in KB
+        function formatFileSize(bytes) {
+            return (bytes / 1024).toFixed(2) + ' KB';
+        }
+
+        // Function to get file size from blob
+        function getFileSizeFromBlob(blob) {
+            return formatFileSize(blob.size);
+        }
+
         // File input change handler
         document.getElementById('imageUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                originalImageBlob = file;
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('beforeImage').src = e.target.result;
+                    document.getElementById('beforeSize').textContent = formatFileSize(file.size);
+                    document.getElementById('originalSize').style.display = 'inline-block';
+                    document.getElementById('originalSize').textContent = 'Original: ' + formatFileSize(file.size);
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // Upload function
-        async function uploadImage() {
+        // Blur function
+        async function blurImage() {
             const fileInput = document.getElementById('imageUpload');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const successMessage = document.getElementById('successMessage');
+            const loadingSpinner = document.getElementById('blurLoadingSpinner');
+            const successMessage = document.getElementById('blurSuccessMessage');
+            const downloadBtn = document.getElementById('downloadBtn');
             
             if (!fileInput.files[0]) {
                 alert('Please select an image first!');
@@ -115,31 +168,98 @@
             // Show loading
             loadingSpinner.style.display = 'block';
             successMessage.style.display = 'none';
+            downloadBtn.style.display = 'none';
 
-           try {
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
 
-    const response = await fetch('https://krrishcoder07-face-blur-app.hf.space/process', {
-        method: 'POST',
-        body: formData
-    });
+                const response = await fetch('https://krrishcoder07-face-blur-app.hf.space/process', {
+                    method: 'POST',
+                    body: formData
+                });
 
-    if (!response.ok) {
-        throw new Error('Processing failed');
-    }
+                if (!response.ok) {
+                    throw new Error('Face blurring failed');
+                }
 
-    const blob = await response.blob(); // ✅ read as blob (image/jpeg)
-    const imageUrl = URL.createObjectURL(blob);
+                const blob = await response.blob();
+                processedImageBlob = blob;
+                const imageUrl = URL.createObjectURL(blob);
 
-    document.getElementById('outputImage').src = imageUrl;
-    loadingSpinner.style.display = 'none';
-    successMessage.style.display = 'block';
+                document.getElementById('outputImage').src = imageUrl;
+                document.getElementById('afterSize').textContent = getFileSizeFromBlob(blob);
+                
+                // Setup download
+                downloadBtn.href = imageUrl;
+                downloadBtn.download = 'blurred_faces_image.jpg';
+                downloadBtn.style.display = 'inline-block';
+                
+                loadingSpinner.style.display = 'none';
+                successMessage.style.display = 'block';
 
-} catch (error) {
-    loadingSpinner.style.display = 'none';
-    alert('Error: ' + error.message);
-}
+            } catch (error) {
+                loadingSpinner.style.display = 'none';
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Resize function
+        async function resizeImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const targetSizeInput = document.getElementById('targetSize');
+            const loadingSpinner = document.getElementById('resizeLoadingSpinner');
+            const successMessage = document.getElementById('resizeSuccessMessage');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            if (!fileInput.files[0]) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            if (!targetSizeInput.value || targetSizeInput.value <= 0) {
+                alert('Please enter a valid target size in KB!');
+                return;
+            }
+
+            // Show loading
+            loadingSpinner.style.display = 'block';
+            successMessage.style.display = 'none';
+            downloadBtn.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('target_size_kb', targetSizeInput.value);
+
+                const response = await fetch('https://krrishcoder07-face-blur-app.hf.space/resize', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Resize failed');
+                }
+
+                const blob = await response.blob();
+                processedImageBlob = blob;
+                const imageUrl = URL.createObjectURL(blob);
+
+                document.getElementById('outputImage').src = imageUrl;
+                document.getElementById('afterSize').textContent = getFileSizeFromBlob(blob);
+                
+                // Setup download
+                downloadBtn.href = imageUrl;
+                downloadBtn.download = `resized_${targetSizeInput.value}kb_image.jpg`;
+                downloadBtn.style.display = 'inline-block';
+                
+                loadingSpinner.style.display = 'none';
+                successMessage.style.display = 'block';
+
+            } catch (error) {
+                loadingSpinner.style.display = 'none';
+                alert('Error: ' + error.message);
+            }
         }
 
         // Initialize particles on page load
