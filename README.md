@@ -1,199 +1,106 @@
 # 🔐 Face Blur Magic
 
 Protect your privacy with AI-powered face detection and blurring.  
-This project uses a **FastAPI backend** to detect faces and apply a blur, and a beautifully animated **HTML/CSS/JS frontend** to provide a smooth user experience.
+This project provides a beautifully animated **frontend interface** where users can upload an image and view **Before/After** results.
 
 ---
 
-## 🌟 Features
+## 🌐 Live Demo
 
-- 📸 Upload images with faces
-- 🧠 AI detects faces and blurs them using OpenCV
-- 🎨 See **Before/After** results
-- 💻 FastAPI backend with `/process` endpoint
-- 💅 Stylish and responsive frontend with animations
-
----
-
-## 🚀 Live Demo
-
-Try it on **Hugging Face Spaces**:  
-👉 [https://krrishcoder07-face-blur-app.hf.space](https://krrishcoder07-face-blur-app.hf.space)
+- 🔗 Frontend: [https://krrishcoder.github.io/image_blur_frontend/](https://krrishcoder.github.io/image_blur_frontend/)
+- 🧠 API Endpoint (backend): [https://krrishcoder07-face-blur-app.hf.space/process](https://krrishcoder07-face-blur-app.hf.space/process)
 
 ---
 
 ## 🗂 Project Structure
 
 ```
-face-blur-magic/
-├── backend/
-│   ├── main.py              # FastAPI logic
-│   └── requirements.txt     # Python dependencies
-├── frontend/
-│   ├── index.html           # UI markup
-│   └── style.css            # All styles and animation
-├── README.md                # You're here!
+image_blur_frontend/
+├── index.html         # Main HTML UI
+├── style.css          # CSS styling and animations
+├── README.md          # Project documentation
 ```
+
+---
+
+## 🌟 Features
+
+- 📸 Upload any image
+- 🧠 AI detects faces and blurs them
+- 🎨 Beautiful before/after comparison
+- ✨ Animated, responsive UI
+- 💻 Uses public backend hosted on HuggingFace Spaces
 
 ---
 
 ## 🧠 Tech Stack
 
 - **Frontend**: HTML, CSS, JavaScript
-- **Backend**: FastAPI, OpenCV, RetinaFace
-- **Deployment**: Hugging Face Spaces
+- **Backend (hosted)**: FastAPI, RetinaFace, OpenCV (not included in this repo)
+- **Deployment**: GitHub Pages + Hugging Face Spaces
 
 ---
 
-## 🛠️ Backend Setup (FastAPI + OpenCV)
+## 💡 How to Use
 
-### 1. Clone the repo
+1. Open the app in your browser:  
+   👉 [https://krrishcoder.github.io/image_blur_frontend/](https://krrishcoder.github.io/image_blur_frontend/)
 
-```bash
-git clone https://github.com/krrishcoder07/face-blur-magic.git
-cd face-blur-magic/backend
-```
+2. Click **"Choose Image File"** and select a photo with faces
 
-### 2. Create and activate a virtual environment
+3. Hit the **"✨ Process Image"** button
 
-```bash
-python -m venv venv
-source venv/bin/activate        # On Windows: venv\Scripts\activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Run the FastAPI server
-
-```bash
-uvicorn main:app --reload
-```
-
-Your backend will be running at `http://127.0.0.1:8000`
+4. View the **Before** and **After** results!
 
 ---
 
-## 📦 `requirements.txt`
+## 📤 API Reference (Used Behind the Scenes)
 
-Below is a typical list of required packages (add more if used):
+**Endpoint:** `POST https://krrishcoder07-face-blur-app.hf.space/process`  
+**Payload:** `multipart/form-data` with a `file` field (image)
 
-```
-fastapi
-uvicorn
-opencv-python
-retina-face
-python-multipart
-```
-
-Save the above in `backend/requirements.txt`.
-
----
-
-## 🖼️ Frontend Setup
-
-Just open the file in your browser:
-
-```bash
-cd ../frontend
-open index.html   # or just double click to open it
-```
-
-To connect the frontend to a **local backend**, change this line in the `<script>`:
-
-```js
-const response = await fetch('http://127.0.0.1:8000/process', {
-  method: 'POST',
-  body: formData
-});
-```
-
----
-
-## 📤 API Reference
-
-### POST `/process`
-
-Upload an image and receive the processed image with blurred faces.
-
-- **Method**: `POST`
-- **Body**: `multipart/form-data` (with field named `file`)
-- **Response**: JPEG (`image/jpeg`)
-
-### Example in JavaScript:
+### JavaScript Upload Sample
 
 ```js
 const formData = new FormData();
-formData.append('file', yourFile);
+formData.append('file', fileInput.files[0]);
 
-const response = await fetch('/process', {
-  method: 'POST',
-  body: formData
+const response = await fetch('https://krrishcoder07-face-blur-app.hf.space/process', {
+    method: 'POST',
+    body: formData
 });
 
 const blob = await response.blob();
 const imageUrl = URL.createObjectURL(blob);
-```
-
----
-
-## 🔧 Sample `main.py` (Backend logic)
-
-```python
-import cv2 as cv
-import numpy as np
-from retinaface import RetinaFace
-from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import Response
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.post("/process")
-async def process(file: UploadFile = File(...)):
-    contents = await file.read()
-    np_arr = np.frombuffer(contents, np.uint8)
-    img = cv.imdecode(np_arr, cv.IMREAD_COLOR)
-
-    faces = RetinaFace.detect_faces(img)
-    if isinstance(faces, dict):
-        for key, value in faces.items():
-            x1, y1, x2, y2 = value["facial_area"]
-            roi = img[y1:y2, x1:x2]
-            blurred = cv.GaussianBlur(roi, (15, 15), 0)
-            img[y1:y2, x1:x2] = blurred
-
-    _, buffer = cv.imencode(".jpg", img)
-    return Response(content=buffer.tobytes(), media_type="image/jpeg")
+document.getElementById('outputImage').src = imageUrl;
 ```
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Here’s how you can help:
+We welcome contributions! Here's how to get started:
 
-1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -m 'Add your message'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Create a new Pull Request
+1. **Fork** the repository  
+2. **Clone** your fork  
+   ```bash
+   git clone https://github.com/your-username/image_blur_frontend.git
+   ```
+3. Create a new branch  
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+4. Make your changes and commit  
+   ```bash
+   git commit -m "Add your feature"
+   ```
+5. Push your branch and create a Pull Request  
 
 ---
 
 ## 📃 License
 
-This project is open source under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
